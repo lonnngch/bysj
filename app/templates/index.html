@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>视频质量评估系统</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <h1>视频质量评估系统</h1>
+
+    <section class="card">
+      <h2>上传视频并评估</h2>
+      <form id="upload-form">
+        <input type="file" id="video" name="video" accept="video/*" required />
+        <button type="submit">开始评估</button>
+      </form>
+      <p id="status"></p>
+    </section>
+
+    <section class="card" id="result-card" hidden>
+      <h2>评估结果</h2>
+      <ul id="result-list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>最近评估记录</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>文件名</th>
+            <th>评分</th>
+            <th>置信度</th>
+            <th>引擎</th>
+            <th>时间</th>
+          </tr>
+        </thead>
+        <tbody id="history"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
