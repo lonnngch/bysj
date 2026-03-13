@@ -1,6 +1,8 @@
+# app/storage.py
 import sqlite3
 from pathlib import Path
 from typing import Dict, List, Optional
+from contextlib import contextmanager
 
 
 class EvaluationStore:
@@ -9,13 +11,24 @@ class EvaluationStore:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
+    @contextmanager
+    def _get_connection(self):
+        """使用上下文管理器确保连接正确关闭"""
+        conn = sqlite3.connect(str(self.db_path))
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+        finally:
+            conn.close()
+
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        """保持向后兼容，但推荐使用 _get_connection"""
+        conn = sqlite3.connect(str(self.db_path))
         conn.row_factory = sqlite3.Row
         return conn
 
     def _init_db(self) -> None:
-        with self._connect() as conn:
+        with self._get_connection() as conn:
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS evaluations (
@@ -33,7 +46,7 @@ class EvaluationStore:
             conn.commit()
 
     def add(self, payload: Dict) -> int:
-        with self._connect() as conn:
+        with self._get_connection() as conn:
             cur = conn.execute(
                 """
                 INSERT INTO evaluations (
@@ -55,7 +68,7 @@ class EvaluationStore:
             return int(cur.lastrowid)
 
     def list(self, limit: int = 20) -> List[Dict]:
-        with self._connect() as conn:
+        with self._get_connection() as conn:
             rows = conn.execute(
                 """
                 SELECT id, filename, score, confidence, duration_sec,
@@ -69,7 +82,7 @@ class EvaluationStore:
             return [dict(row) for row in rows]
 
     def get(self, item_id: int) -> Optional[Dict]:
-        with self._connect() as conn:
+        with self._get_connection() as conn:
             row = conn.execute(
                 """
                 SELECT id, filename, score, confidence, duration_sec,

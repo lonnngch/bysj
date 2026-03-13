@@ -1,0 +1,18 @@
+<!-- app/templates/error.html -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>错误 - 视频质量评估系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="container">
+        <div class="card error-card">
+            <h1>出错了</h1>
+            <p class="error-message">{{ error }}</p>
+            <a href="/" class="button">返回首页</a>
+        </div>
+    </main>
+</body>
+</html>

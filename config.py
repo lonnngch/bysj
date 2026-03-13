@@ -8,7 +8,7 @@ FEATURE_DIR = r"F:\毕业设计\data\features"
 
 IMG_SIZE = 224
 BATCH_SIZE = 4
-EPOCHS = 10
+EPOCHS = 8
 LR = 1e-4
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

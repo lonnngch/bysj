@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 import config
 from dataset.video_dataset import VideoDataset
 from models.vit_model import ViTFeature
@@ -8,13 +9,25 @@ from utils.metrics import compute_metrics
 
 def main():
 
+    print("========== Video Quality Test ==========")
+
+    # 数据集
+    print("Loading dataset...")
     dataset = VideoDataset()
+    print("Dataset size:", len(dataset))
 
-    loader = DataLoader(dataset, batch_size=1, shuffle=False)
+    loader = DataLoader(
+        dataset,
+        batch_size=1,
+        shuffle=False
+    )
 
+    # 模型
+    print("Loading model...")
     model = ViTFeature().to(config.DEVICE)
 
-    # 加载模型
+    # 加载权重
+    print("Loading checkpoint...")
     ckpt = torch.load(
         r"F:\毕业设计\checkpoints\best_model.pth",
         map_location=config.DEVICE
@@ -23,13 +36,16 @@ def main():
     model.load_state_dict(ckpt)
 
     model.eval()
+    print("Model loaded successfully")
 
     preds = []
     gts = []
 
+    print("Start testing...")
+
     with torch.no_grad():
 
-        for frames, score in loader:
+        for frames, score in tqdm(loader):
 
             frames = frames.to(config.DEVICE)
 
@@ -38,8 +54,12 @@ def main():
             preds.append(pred.item())
             gts.append(score.item())
 
+    print("Testing finished")
+
+    # 计算指标
     srcc, plcc, rmse = compute_metrics(preds, gts)
 
+    print("========== Test Result ==========")
     print("SRCC:", srcc)
     print("PLCC:", plcc)
     print("RMSE:", rmse)

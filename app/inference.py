@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -11,6 +12,8 @@ from torchvision.io import read_video
 
 import config
 from models.vit_model import ViTFeature
+
+logger = logging.getLogger(__name__)
 
 
 class VideoQualityInferenceService:
@@ -31,10 +34,16 @@ class VideoQualityInferenceService:
         if not self.checkpoint_path.exists():
             return
 
-        model = ViTFeature(num_segments=4).to(self.device)
-        state = torch.load(self.checkpoint_path, map_location=self.device)
-        model.load_state_dict(state)
-        model.eval()
+        try:
+            model = ViTFeature(num_segments=4).to(self.device)
+            state = torch.load(self.checkpoint_path, map_location=self.device)
+            model.load_state_dict(state)
+            model.eval()
+        except Exception as err:
+            logger.exception("Failed to load model checkpoint, fallback to heuristic engine", exc_info=err)
+            self.model = None
+            self.engine = "heuristic"
+            return
 
         self.model = model
         self.engine = "vit_fusion"

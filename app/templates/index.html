@@ -1,47 +1,194 @@
+<!-- app/templates/index.html -->
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>视频质量评估系统</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>视频质量评估系统 - AI智能评测</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <!-- 添加 Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- 添加动画库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
 <body>
-  <main class="container">
-    <h1>视频质量评估系统</h1>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-video"></i>
+                <span>豫章师范学院</span>
+            </div>
+            <div class="nav-links">
+                <a href="#upload" class="nav-link active"><i class="fas fa-upload"></i> 上传评估</a>
+                <a href="#history" class="nav-link"><i class="fas fa-history"></i> 历史记录</a>
+                <a href="#about" class="nav-link"><i class="fas fa-info-circle"></i> 关于</a>
+            </div>
+            <div class="model-status">
+                <span class="status-indicator" id="modelStatus"></span>
+                <span id="engineType"></span>
+            </div>
+        </div>
+    </nav>
 
-    <section class="card">
-      <h2>上传视频并评估</h2>
-      <form id="upload-form">
-        <input type="file" id="video" name="video" accept="video/*" required />
-        <button type="submit">开始评估</button>
-      </form>
-      <p id="status"></p>
-    </section>
+    <!-- 主要内容 -->
+    <main class="container">
+        <!-- 页眉 -->
+        <header class="page-header animate__animated animate__fadeIn">
+            <h1><i class="fas fa-microchip"></i> 视频质量评估系统</h1>
+            <p class="subtitle">基于Transformer的视频质量评估系统</p>
+        </header>
 
-    <section class="card" id="result-card" hidden>
-      <h2>评估结果</h2>
-      <ul id="result-list"></ul>
-    </section>
+        <!-- 上传区域 -->
+        <section class="upload-section card animate__animated animate__fadeInUp" id="upload">
+            <div class="section-header">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h2>上传视频并评估</h2>
+            </div>
 
-    <section class="card">
-      <h2>最近评估记录</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>文件名</th>
-            <th>评分</th>
-            <th>置信度</th>
-            <th>引擎</th>
-            <th>时间</th>
-          </tr>
-        </thead>
-        <tbody id="history"></tbody>
-      </table>
-    </section>
-  </main>
+            <div class="upload-container">
+                <form id="upload-form" class="upload-form">
+                    <div class="file-input-wrapper" id="dropZone">
+                        <input type="file" id="video" name="video" accept="video/*" required />
+                        <div class="file-input-content">
+                            <i class="fas fa-file-video"></i>
+                            <p class="upload-text">点击或拖拽视频文件到此处</p>
+                            <p class="upload-hint">支持 MP4, AVI, MOV, MKV (最大300MB)</p>
+                            <span class="file-name" id="fileName"></span>
+                        </div>
+                    </div>
 
-  <script src="{{ url_for('static', filename='app.js') }}"></script>
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-play"></i>
+                        <span>开始评估</span>
+                    </button>
+                </form>
+
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">正在上传...</p>
+                </div>
+            </div>
+
+            <div id="status" class="status-message"></div>
+        </section>
+
+        <!-- 评估结果卡片 -->
+        <section class="result-section card animate__animated animate__fadeInUp" id="result-card" hidden>
+            <div class="section-header">
+                <i class="fas fa-chart-line"></i>
+                <h2>评估结果</h2>
+            </div>
+
+            <div class="result-container">
+                <div class="score-circle">
+                    <svg class="score-gauge" viewBox="0 0 120 120">
+                        <circle class="gauge-bg" cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="8"/>
+                        <circle class="gauge-fill" cx="60" cy="60" r="54" fill="none" stroke="#4f46e5" stroke-width="8"
+                                stroke-dasharray="339.292" stroke-dashoffset="0" id="gaugeFill"/>
+                        <text x="60" y="60" text-anchor="middle" dy=".3em" class="gauge-text" id="scoreDisplay">0.0</text>
+                    </svg>
+                    <p class="score-label">综合评分</p>
+                </div>
+
+                <div class="result-details" id="result-list">
+                    <!-- 动态填充结果 -->
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button class="btn-secondary" onclick="shareResult()">
+                    <i class="fas fa-share-alt"></i> 分享结果
+                </button>
+                <button class="btn-secondary" onclick="downloadReport()">
+                    <i class="fas fa-download"></i> 下载报告
+                </button>
+            </div>
+        </section>
+
+        <!-- 历史记录区域 -->
+        <section class="history-section card animate__animated animate__fadeInUp" id="history">
+            <div class="section-header">
+                <i class="fas fa-clock-rotate-left"></i>
+                <h2>最近评估记录</h2>
+                <div class="header-actions">
+                    <select class="filter-select" id="historyLimit">
+                        <option value="5">最近5条</option>
+                        <option value="10" selected>最近10条</option>
+                        <option value="20">最近20条</option>
+                        <option value="50">最近50条</option>
+                    </select>
+                    <button class="btn-refresh" onclick="refreshHistory()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>文件名</th>
+                            <th>评分</th>
+                            <th>置信度</th>
+                            <th>引擎</th>
+                            <th>时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history"></tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <p class="table-info" id="historyInfo"></p>
+            </div>
+        </section>
+
+        <!-- 关于区域 -->
+        <section class="about-section card animate__animated animate__fadeInUp" id="about">
+            <div class="section-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>关于系统</h2>
+            </div>
+
+            <div class="about-content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-brain"></i>
+                        <h3>ViT深度学习模型</h3>
+                        <p>采用Vision Transformer架构，精准评估视频质量</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gauge-high"></i>
+                        <h3>1-5分评分系统</h3>
+                        <p>直观的评分标准，快速了解视频质量</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-simple"></i>
+                        <h3>置信度分析</h3>
+                        <p>提供评估结果的置信度指标</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-clock"></i>
+                        <h3>实时处理</h3>
+                        <p>快速抽帧分析，即时返回结果</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 豫章师院  基于Transformer的视频质量评估系统.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
