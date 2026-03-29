@@ -9,8 +9,6 @@ from scipy.stats import spearmanr, pearsonr
 import joblib
 import config
 
-# 特征目录
-FEATURE_DIR = r"F:\毕业设计\data\features"
 
 # 读取MOS文件
 mos_data = pd.read_csv(config.MOS_FILE)
@@ -22,7 +20,7 @@ X = []
 y = []
 
 # 遍历features文件夹
-for file in os.listdir(FEATURE_DIR):
+for file in os.listdir(config.FEATURE_DIR):
 
     if file.endswith(".npy"):
 
@@ -31,7 +29,7 @@ for file in os.listdir(FEATURE_DIR):
         # 判断MOS是否存在
         if video_name in mos_dict:
 
-            feature_path = os.path.join(FEATURE_DIR, file)
+            feature_path = os.path.join(config.FEATURE_DIR, file)
 
             feat = np.load(feature_path)
 

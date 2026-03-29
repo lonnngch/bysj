@@ -3,13 +3,10 @@ import pandas as pd
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
-from torchvision import transforms
+from torchvision.models import ViT_B_16_Weights
 from config import FRAME_DIR, MOS_FILE
 
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor()
-])
+transform = ViT_B_16_Weights.DEFAULT.transforms()
 
 
 class VideoDataset(Dataset):

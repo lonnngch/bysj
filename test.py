@@ -29,7 +29,7 @@ def main():
     # 加载权重
     print("Loading checkpoint...")
     ckpt = torch.load(
-        r"F:\毕业设计\checkpoints\best_model.pth",
+        config.BEST_MODEL_PATH,
         map_location=config.DEVICE
     )
 
